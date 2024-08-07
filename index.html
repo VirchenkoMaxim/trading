@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Object Manager</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            display: flex;
+            background: #d9d9d9;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .container {
+            display: flex;
+            width: 100%;
+            max-width: 1200px;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .symbol-list, .user-section {
+            width: 48%;
+            padding: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            background: #fdfdfd;
+            border-radius: 8px;
+        }
+        .symbol-list h2, .user-section h2 {
+            margin-top: 0;
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        button {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #userCreationSection, #userContainer {
+            display: none; /* Hide by default, show as needed */
+        }
+        #usernameSection {
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        #usernameSection button, #userCreationSection button {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+<h2>User Manager</h2>
+
+<div id="usernameSection">
+    <input type="text" id="usernameInput" placeholder="Enter username" />
+    <button onclick="fetchUser()">Fetch User</button>
+</div>
+
+<div id="userCreationSection">
+    <input type="text" id="newUsernameInput" placeholder="Enter new username" />
+    <button onclick="createUser()">Create User</button>
+</div>
+
+<div id="userContainer"></div>
+
+<div class="container">
+    <div class="symbol-list">
+        <h2>All Trading Symbols</h2>
+        <table id="allSymbolsTable">
+            <thead>
+            <tr>
+                <th>Symbol</th>
+                <th>Ask</th>
+                <th>Bid</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody id="allSymbolsContainer"></tbody>
+        </table>
+    </div>
+    <div class="user-section">
+        <h2>User Symbols</h2>
+        <table id="userSymbolsTable">
+            <thead>
+            <tr>
+                <th>Symbol</th>
+                <th>Ask</th>
+                <th>Bid</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody id="userSymbolsContainer"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    let user = null
+    const apiUrl = 'http://localhost:3000/api'
+    // Function to fetch user data from the API
+    async function fetchUser() {
+        try {
+            const response = await fetch(`${apiUrl}/users/one`);
+
+            if (response.ok) {
+                user = await response.json();
+                renderUser();
+            } else {
+                document.getElementById('userCreationSection').style.display = 'block';
+                document.getElementById('usernameSection').style.display = 'none';
+                document.getElementById('userContainer').innerHTML = `
+                        <p>User does not exist. You can create a new user.</p>
+                    `;
+            }
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+
+    // Function to create a new user with the username from the new username input field
+    async function createUser() {
+        const newUsername = document.getElementById('newUsernameInput').value.trim();
+        if (!newUsername) {
+            alert('Please enter a username.');
+            return;
+        }
+
+        try {
+            const createResponse = await fetch(`${apiUrl}/users`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: newUsername })
+            });
+
+            if (!createResponse.ok) {
+                const { message } = await createResponse.json()
+                throw new Error(message);
+            }
+
+            const response = await fetch(`${apiUrl}/users/one`);
+
+            if (!response.ok) {
+                const { message } = await createResponse.json()
+                throw new Error(message);
+            }
+
+            // Fetch and render the new user's data
+            user = await response.json();
+            document.getElementById('userCreationSection').style.display = 'none';
+            document.getElementById('usernameSection').style.display = 'none';
+            renderUser();
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+
+    // Function to add a symbol to the user (API integration needed)
+    async function addSymbol(symbol) {
+        try {
+            if(!user) {
+                throw new Error('create user to allow adding trading symbols');
+            }
+
+            const response = await fetch(`${apiUrl}/users/${user._id}/toggle-trading-symbols`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ symbolId: symbol, event: 'add' })
+            });
+
+            if (!response.ok) {
+                const { message } = await response.json()
+                throw new Error(message);
+            }
+
+            await renderUserSymbols();
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+
+    // Function to remove a symbol from the user (API integration needed)
+    async function removeSymbol(symbol) {
+        try {
+            const response = await fetch(`${apiUrl}/users/${user._id}/toggle-trading-symbols`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ symbolId: symbol, event: 'remove' })
+            });
+
+            if (!response.ok) {
+                const { message } = await response.json()
+                throw new Error(message);
+            }
+
+            await renderUserSymbols();
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+
+    // Function to render the list of all symbols
+    async function renderAllSymbols() {
+        const allSymbolsContainer = document.getElementById('allSymbolsContainer');
+        allSymbolsContainer.innerHTML = '';
+
+        try {
+            const response = await fetch(`${apiUrl}/trading-symbols`);
+            if (!response.ok) return
+
+            const symbols = await response.json();
+            symbols.forEach(({ symbol, ask, bid }) => {
+                const symbolRow = document.createElement('tr');
+                symbolRow.innerHTML = `
+                        <td>${symbol}</td>
+                        <td>${ask}</td>
+                        <td>${bid}</td>
+                        <td><button onclick="addSymbol('${symbol}')">Add</button></td>
+                    `;
+                allSymbolsContainer.appendChild(symbolRow);
+            });
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+
+    // Function to render the user's symbols
+    async function renderUserSymbols() {
+        const userSymbolsContainer = document.getElementById('userSymbolsContainer');
+        userSymbolsContainer.innerHTML = '';
+
+        const response = await fetch(`${apiUrl}/trading-symbols?userId=${user._id}`);
+        if (!response.ok) return
+
+        const symbols = await response.json();
+
+        symbols.forEach(({ symbol, ask, bid }) => {
+            const symbolRow = document.createElement('tr');
+            symbolRow.innerHTML = `
+                    <td>${symbol}</td>
+                    <td>${ask}</td>
+                    <td>${bid}</td>
+                    <td><button onclick="removeSymbol('${symbol}')">Remove</button></td>
+                `;
+            userSymbolsContainer.appendChild(symbolRow);
+        });
+
+        document.getElementById('userContainer').style.display = 'block';
+    }
+
+    // Function to render the user section (combining user info and symbols)
+    async function renderUser() {
+        document.getElementById('userContainer').innerHTML = `
+                <h3>${user.name}</h3>
+            `;
+        await renderUserSymbols();
+        document.getElementById('userCreationSection').style.display = 'none';
+        document.getElementById('usernameSection').style.display = 'none';
+        document.getElementById('userContainer').style.display = 'block';
+    }
+
+    // Initialize the page
+    window.onload = () => {
+        renderAllSymbols();
+        fetchUser()
+    };
+</script>
