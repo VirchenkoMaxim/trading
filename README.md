@@ -26,18 +26,22 @@ Before proceeding with the installation, ensure that you have the following prer
    ```shell
    cd trading
 
-3. Create a `.env` file for environment variables:
+3. Install dependencies
+   ```shell
+   yarn install
+
+4. Create a `.env` file for environment variables:
 
    ```shell
    cp .env.example .env
 
-4. Open the `.env` file and configure the necessary environment variables. Make sure to set the appropriate values for your setup.
+5. Open the `.env` file and configure the necessary environment variables. Make sure to set the appropriate values for your setup.
    <br><br>
-5. Run service:
+6. Run service:
    ```shell
    yarn start
 
-6. This component exposes swagger documentation: `http://localhost:{API_PORT}/api/docs`
+7. This component exposes swagger documentation: `http://localhost:{API_PORT}/api/docs`
 
 ### UI
 
