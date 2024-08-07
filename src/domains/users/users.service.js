@@ -36,7 +36,7 @@ class UsersService {
     }
 
     const delegator = {
-      [enums.users.toggleSymbolsEvents.ADD]: '$push',
+      [enums.users.toggleSymbolsEvents.ADD]: '$addToSet',
       [enums.users.toggleSymbolsEvents.REMOVE]: '$pull',
     }
 
