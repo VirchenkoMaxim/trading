@@ -10,3 +10,5 @@ exports.decimalCount = (number) => {
 
   return count.length
 }
+
+exports.arrayToMap = (array, key) => new Map(array.map((item) => [item[key], item]))

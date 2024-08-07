@@ -1,4 +1,4 @@
-exports.httpMethods = Object.freeze({
+exports.methods = Object.freeze({
   GET: 'get',
   POST: 'post',
   PUT: 'put',

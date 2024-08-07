@@ -1,7 +1,5 @@
-const { helpers, ApiError } = require('../../shared')
-const _ = require('lodash')
+const { helpers, ApiError, enums } = require('../../shared')
 const httpStatus = require('http-status')
-const UsersService = require('../users/users.service')
 
 class TradingSymbolsService {
   /**
@@ -18,19 +16,39 @@ class TradingSymbolsService {
 
   _spread = 0.05
 
-  async getList(query = {}) {
-    if (_.isEmpty(query)) return this._composeResult(await this._tradingSymbolsProvider.getList())
-
-    const user = await this._usersService.getOne({ _id: query.userId })
+  async getList({ userId, select }) {
+    const user = await this._usersService.getOne({ _id: userId })
 
     if (!user) throw new ApiError(httpStatus.BAD_REQUEST, 'user does not exist')
 
     /** it will be good to have filtration by ids to get just needed data */
-    const result = await this._tradingSymbolsProvider.getList()
+    const results = await this._tradingSymbolsProvider.getList()
 
-    const resultMap = new Map(result.map((item) => [item.symbol, item]))
+    return this._composeResult(await this._listSelectionDiscriminator[select](results, user))
+  }
 
-    return this._composeResult(user.tradingSymbolsIds.map((id) => resultMap.get(id)))
+  _listSelectionDiscriminator = {
+    [enums.tradingSymbols.listSelections.USER_FAVORITE]: this._getUserFavoriteList.bind(this),
+    [enums.tradingSymbols.listSelections.ALL]: this._getAllList.bind(this),
+  }
+
+  async _getUserFavoriteList(results, user) {
+    const serviceMap = helpers.arrayToMap(results, 'symbol')
+
+    return user.tradingSymbolsIds.map((id) => serviceMap.get(id))
+  }
+
+  async _getAllList(results, user) {
+    const serviceMap = helpers.arrayToMap(results, 'symbol')
+
+    const userFavorite = user.tradingSymbolsIds.map((id) => {
+      const item = serviceMap.get(id)
+      serviceMap.delete(id)
+
+      return { ...item, isInFavorite: true }
+    })
+
+    return [...userFavorite, ...Array.from(serviceMap.values())]
   }
 
   _composeResult(data) {

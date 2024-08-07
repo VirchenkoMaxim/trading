@@ -1,4 +1,4 @@
-const { httpMethods } = require('../../enum/http')
+const { enums } = require('../../shared')
 const { httpClient } = require('../../shared')
 
 class TradingSymbolsProvider {
@@ -7,15 +7,14 @@ class TradingSymbolsProvider {
   _context = 'Trading Symbols'
 
   async getList() {
-    return httpClient.sendRequest({ method: httpMethods.GET, url: this._url }, this._context)
+    return httpClient.sendRequest({ method: enums.http.methods.GET, url: this._url }, this._context)
   }
 
   async getOneById(symbol) {
     try {
-      return { symbol: 'BTCUSDT', price: '56800.00', time: 1723033374931 }
       return await httpClient.sendRequest(
         {
-          method: httpMethods.GET,
+          method: enums.http.methods.GET,
           url: this._url,
           params: { symbol },
         },

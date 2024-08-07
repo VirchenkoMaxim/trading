@@ -11,7 +11,7 @@
     "prettier": "prettier --check \"src/**/*.js\""
   },
   "devDependencies": {
-    "@babel/eslint-parser": "^7.16.5",
+    "@babel/eslint-parser": "^7.25.1",
     "@types/jest": "^29.5.3",
     "babel-eslint": "^10.1.0",
     "eslint": "^7.32.0",

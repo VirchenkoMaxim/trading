@@ -1,6 +1,6 @@
 const { CommonRepository } = require('../../common/common.repository')
 const mongoose = require('mongoose')
-const { dbCollectionNames } = require('../../enum/db')
+const { enums } = require('../../shared')
 
 const UserSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -9,7 +9,7 @@ const UserSchema = new mongoose.Schema({
 
 class UsersRepository extends CommonRepository {
   constructor() {
-    super(mongoose.model(dbCollectionNames.USERS, UserSchema, dbCollectionNames.USERS))
+    super(mongoose.model(enums.db.collectionNames.USERS, UserSchema, enums.db.collectionNames.USERS))
   }
 }
 

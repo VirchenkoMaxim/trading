@@ -195,7 +195,7 @@
                 throw new Error(message);
             }
 
-            await renderUserSymbols();
+            await Promise.all([renderUserSymbols(), renderAllSymbols()]);
         } catch (error) {
             alert(error.message);
         }
@@ -215,7 +215,7 @@
                 throw new Error(message);
             }
 
-            await renderUserSymbols();
+            await Promise.all([renderUserSymbols(), renderAllSymbols()]);
         } catch (error) {
             alert(error.message);
         }
@@ -227,18 +227,20 @@
         allSymbolsContainer.innerHTML = '';
 
         try {
-            const response = await fetch(`${apiUrl}/trading-symbols`);
+            const url = new URLSearchParams({ select: 'all' , userId: user._id });
+            const response = await fetch(`${apiUrl}/trading-symbols?${url.toString()}`);
             if (!response.ok) return
 
             const symbols = await response.json();
-            symbols.forEach(({ symbol, ask, bid }) => {
+            symbols.forEach(({ symbol, ask, bid ,isInFavorite}) => {
                 const symbolRow = document.createElement('tr');
                 symbolRow.innerHTML = `
                         <td>${symbol}</td>
                         <td>${ask}</td>
                         <td>${bid}</td>
-                        <td><button onclick="addSymbol('${symbol}')">Add</button></td>
+                        ${isInFavorite ? `<td></td>`: `<td><button onclick="addSymbol('${symbol}')">Add</button></td>`}
                     `;
+
                 allSymbolsContainer.appendChild(symbolRow);
             });
         } catch (error) {
@@ -251,7 +253,9 @@
         const userSymbolsContainer = document.getElementById('userSymbolsContainer');
         userSymbolsContainer.innerHTML = '';
 
-        const response = await fetch(`${apiUrl}/trading-symbols?userId=${user._id}`);
+        const url = new URLSearchParams({ select: 'userFavorite' , userId: user._id });
+        const response = await fetch(`${apiUrl}/trading-symbols?${url.toString()}`);
+
         if (!response.ok) return
 
         const symbols = await response.json();
@@ -275,7 +279,7 @@
         document.getElementById('userContainer').innerHTML = `
                 <h3>${user.name}</h3>
             `;
-        await renderUserSymbols();
+        await Promise.all([renderUserSymbols(), renderAllSymbols()]);
         document.getElementById('userCreationSection').style.display = 'none';
         document.getElementById('usernameSection').style.display = 'none';
         document.getElementById('userContainer').style.display = 'block';
@@ -284,6 +288,5 @@
     // Initialize the page
     window.onload = () => {
         fetchUser()
-        renderAllSymbols();
     };
 </script>

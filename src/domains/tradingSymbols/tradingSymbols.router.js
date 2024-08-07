@@ -1,4 +1,4 @@
-const { httpMethods } = require('../../enum/http')
+const { enums } = require('../../shared')
 const { container } = require('../../di-container')
 const schema = require('./tradingSymbols.schema')
 
@@ -6,7 +6,7 @@ const tradingSymbolsController = container.resolve('tradingSymbolsController')
 
 module.exports = {
   basePath: '/trading-symbols',
-  [httpMethods.GET]: [
+  [enums.http.methods.GET]: [
     {
       url: '/',
       handler: tradingSymbolsController.getList,

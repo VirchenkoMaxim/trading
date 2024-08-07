@@ -1,4 +1,4 @@
-const { httpMethods } = require('../../enum/http')
+const { enums } = require('../../shared')
 const { container } = require('../../di-container')
 const schema = require('./users.schema')
 
@@ -7,7 +7,7 @@ const usersController = container.resolve('usersController')
 
 module.exports = {
   basePath: '/users',
-  [httpMethods.GET]: [
+  [enums.http.methods.GET]: [
     {
       url: '/',
       handler: usersController.getList,
@@ -24,12 +24,12 @@ module.exports = {
       schema: schema.getOne,
     },
   ],
-  [httpMethods.POST]: {
+  [enums.http.methods.POST]: {
     url: '/',
     handler: usersController.createOne,
     schema: schema.createOne,
   },
-  [httpMethods.PUT]: [
+  [enums.http.methods.PUT]: [
     {
       url: '/:id/toggle-trading-symbols',
       handler: usersController.toggleTradingSymbols,
