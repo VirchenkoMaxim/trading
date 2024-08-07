@@ -35,6 +35,10 @@ Before proceeding with the installation, ensure that you have the following prer
    <br><br>
 5. Run service:
    ```shell
-   yarn dev
+   yarn start
 
 6. This component exposes swagger documentation: `http://localhost:{API_PORT}/api/docs`
+
+### UI
+
+Run `index.html` file that located in project root, change port if needed

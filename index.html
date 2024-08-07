@@ -61,9 +61,6 @@
         button:hover {
             background-color: #0056b3;
         }
-        #userCreationSection, #userContainer {
-            display: none; /* Hide by default, show as needed */
-        }
         #usernameSection {
             margin-bottom: 20px;
         }
@@ -81,12 +78,11 @@
 <body>
 <h2>User Manager</h2>
 
-<div id="usernameSection">
+<div id="usernameSection" style="display: none">
     <input type="text" id="usernameInput" placeholder="Enter username" />
-    <button onclick="fetchUser()">Fetch User</button>
 </div>
 
-<div id="userCreationSection">
+<div id="userCreationSection" style="display: none" >
     <input type="text" id="newUsernameInput" placeholder="Enter new username" />
     <button onclick="createUser()">Create User</button>
 </div>
@@ -138,9 +134,6 @@
             } else {
                 document.getElementById('userCreationSection').style.display = 'block';
                 document.getElementById('usernameSection').style.display = 'none';
-                document.getElementById('userContainer').innerHTML = `
-                        <p>User does not exist. You can create a new user.</p>
-                    `;
             }
         } catch (error) {
             alert(error.message);
@@ -290,7 +283,7 @@
 
     // Initialize the page
     window.onload = () => {
-        renderAllSymbols();
         fetchUser()
+        renderAllSymbols();
     };
 </script>
